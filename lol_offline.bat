@@ -25,7 +25,7 @@ if %ERRORLEVEL% == 0 (goto start) else (goto noadmin)
 :noadmin
 echo You have no power here!
 echo (No admin priviledges detected)
-timeout /t 3
+timeout /t 2
 
 echo Set UAC = CreateObject^("Shell.Application"^) > "%TEMP%\getadmin.vbs"
 echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%TEMP%\getadmin.vbs"
@@ -40,11 +40,13 @@ echo League of Legends chat server, effectively making you appear offline
 echo [1] Add firewall rule (appear offline)
 echo [2] Remove all firewall rules (appear online)
 echo [3] Change server, currently: %SERVER%
+echo [4] Create shortcut to desktop
 set /p "ANS= Enter a menu option: "
 
 if /i %ANS% == 1 goto offline
 if /i %ANS% == 2 goto online
 if /i %ANS% == 3 goto changeserver
+if /i %ANS% == 4 goto shortcut
 goto unknown
 
 :offline
@@ -60,7 +62,7 @@ echo.
 echo Blocked IP address(es): %STR%
 echo You are now seen as offline.
 echo.
-timeout /t 7
+timeout /t 4
 goto start
 
 :online
@@ -69,7 +71,7 @@ netsh advfirewall firewall delete rule name="lolchat"
 echo.
 echo You are now seen as online.
 echo.
-timeout /t 3
+timeout /t 2
 goto start
 
 :unknown
@@ -123,3 +125,21 @@ copy /y "%TEMPF%" "%THISF%"
 del "%TEMPF%"
 %0
 )
+
+:shortcut
+cls
+set SCRIPT="%TEMP%\createshortcut.vbs"
+echo Set WS = WScript.CreateObject("WScript.Shell") >> %SCRIPT%
+echo File = "%USERPROFILE%\Desktop\%~n0.lnk" >> %SCRIPT%
+echo Set Link = WS.CreateShortcut(File) >> %SCRIPT%
+echo Link.TargetPath = "%~f0" >> %SCRIPT%
+echo Link.Save >> %SCRIPT%
+
+cscript /nologo %SCRIPT%
+del %SCRIPT%
+
+echo.
+echo Shortcut created to %USERPROFILE%\Desktop\
+echo.
+timeout /t 2
+goto start
